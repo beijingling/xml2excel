@@ -1,5 +1,5 @@
 # xml2excel
-# this is a java resource code tools, that it help us to check the new added android strings.<br>
+<!--this is a java resource code tools, that it help us to check the new added android strings.<br>-->
 <h3>本软件有一下几个功能：<br></h3>
 1.将XML文件装换成Excel文档，将XML文档中的字符串ID与字符串内容分列显示。<br>
 2.将XML文件中的数组plurals进行提取，并显示到Excel文档中。<br>
