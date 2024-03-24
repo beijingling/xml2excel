@@ -9,21 +9,21 @@ import java.io.FileInputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.DataFormat;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.apache.poi.xssf.usermodel.XSSFCellStyle;
-import org.apache.poi.xssf.usermodel.XSSFDataFormat;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class ExcelSplit {
     public static void main(String[] args) {
         try {
             System.out.println("开始拆分.....");
-            Map<String, XSSFWorkbook> map = getSplitMap("D:/xxxx.xlsx");// 得到拆分后的子文件存储对象
+            Map<String, Workbook> map = getSplitMap("D:/xxxx.xlsx");// 得到拆分后的子文件存储对象
             createSplitXSSFWorkbook(map, "D:/splitdone/201404", "2014.04");// 遍历对象生成的拆分文件
             System.out.println("拆分结束,文件被拆分为" + map.size() + "个文件.");
         } catch (Exception e) {
@@ -33,14 +33,14 @@ public class ExcelSplit {
     }
 
     // 将第一列的值作为键值,将一个文件拆分为多个文件
-    public static Map<String, XSSFWorkbook> getSplitMap(String fileName)
+    public static Map<String, Workbook> getSplitMap(String fileName)
             throws Exception {
 
-        Map<String, XSSFWorkbook> map = new HashMap<String, XSSFWorkbook>();
+        Map<String, Workbook> map = new HashMap<String, Workbook>();
 
         InputStream is = new FileInputStream(new File(fileName));
         // 根据输入流创建Workbook对象
-        Workbook wb = WorkbookFactory.create(is);
+        Workbook wb = new HSSFWorkbook(is);
         // get到Sheet对象
         Sheet sheet = wb.getSheetAt(0);
         Row titleRow = null;
@@ -52,9 +52,9 @@ public class ExcelSplit {
             } else {
                 Cell keyCell = row.getCell(0);
                 String key = keyCell.getRichStringCellValue().toString();
-                XSSFWorkbook tempWorkbook = map.get(key);
+                Workbook tempWorkbook = map.get(key);
                 if (tempWorkbook == null) {// 如果以当前行第一列值作为键值取不到工作表
-                    tempWorkbook = new XSSFWorkbook();
+                    tempWorkbook = new HSSFWorkbook();
                     Sheet tempSheet = tempWorkbook.createSheet();
                     Row firstRow = tempSheet.createRow(0);
                     for (short k = 0; k < titleRow.getLastCellNum(); k++) {// 为每个子文件创建标题
@@ -79,13 +79,13 @@ public class ExcelSplit {
     }
 
     // 创建文件
-    public static void createSplitXSSFWorkbook(Map<String, XSSFWorkbook> map,
+    public static void createSplitXSSFWorkbook(Map<String, Workbook> map,
             String savePath, String month) throws IOException {
         Iterator iter = map.entrySet().iterator();
         while (iter.hasNext()) {
             Map.Entry entry = (Map.Entry) iter.next();
             String key = (String) entry.getKey();
-            XSSFWorkbook val = (XSSFWorkbook) entry.getValue();
+            Workbook val = (Workbook) entry.getValue();
             File filePath = new File(savePath);
             if (!filePath.exists()) {
                 System.out.println("存放目录不存在,自动为您创建存放目录.");
@@ -109,7 +109,7 @@ public class ExcelSplit {
     }
 
     // 将一个单元格的值赋给另一个单元格
-    public static void setCellValue(Cell newCell, Cell cell, XSSFWorkbook wb) {
+    public static void setCellValue(Cell newCell, Cell cell, Workbook wb) {
         if (cell == null) {
             return;
         }
@@ -119,8 +119,8 @@ public class ExcelSplit {
             break;
         case Cell.CELL_TYPE_NUMERIC:
             if (DateUtil.isCellDateFormatted(cell)) {
-                XSSFCellStyle cellStyle = wb.createCellStyle();
-                XSSFDataFormat format = wb.createDataFormat();
+                CellStyle cellStyle = wb.createCellStyle();
+                DataFormat format = wb.createDataFormat();
                 cellStyle.setDataFormat(format.getFormat("yyyy/m/d"));
                 newCell.setCellStyle(cellStyle);
                 newCell.setCellValue(cell.getDateCellValue());
